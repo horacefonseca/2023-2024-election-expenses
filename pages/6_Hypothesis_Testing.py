@@ -86,10 +86,11 @@ if 'TOTAL_CONTRIB' in df_donors.columns:
     sorted_donors = df_donors.sort_values('TOTAL_CONTRIB', ascending=True)
     total_contrib = sorted_donors['TOTAL_CONTRIB'].sum()
 
-    # Gini coefficient calculation
+    # Gini coefficient calculation (proper formula)
     n = len(sorted_donors)
-    cumsum = sorted_donors['TOTAL_CONTRIB'].cumsum()
-    gini = (2 * (cumsum * range(1, n+1)).sum() / (n * total_contrib)) - (n + 1) / n
+    cumsum = sorted_donors['TOTAL_CONTRIB'].cumsum().values  # Convert to numpy array
+    index_array = np.arange(1, n + 1)  # Ranks from 1 to n
+    gini = (2 * np.sum(index_array * cumsum) / (n * total_contrib)) - (n + 1) / n
 
     # Top percentile control
     top_1_pct = int(len(sorted_donors) * 0.01)
