@@ -1,0 +1,221 @@
+# Campaign Finance Analysis App - Configuration
+# Updated: 2025-12-10
+
+# Application Settings
+app:
+  title: "Campaign Finance Analysis Dashboard"
+  subtitle: "2023-2024 Election Cycle"
+  layout: "wide"
+  initial_sidebar_state: "expanded"
+
+# Data Sources (FEC Bulk Data)
+data_sources:
+  fec_base_url: "https://www.fec.gov/files/bulk-downloads/2024/"
+
+  files:
+    committee_summary:
+      filename: "webk24.zip"
+      extracted: "webk24.txt"
+      description: "Committee Summary 2024"
+      url: "https://www.fec.gov/files/bulk-downloads/2024/webk24.zip"
+
+    candidate_summary:
+      filename: "weball24.zip"
+      extracted: "weball24.txt"
+      description: "All Candidates 2024"
+      url: "https://www.fec.gov/files/bulk-downloads/2024/weball24.zip"
+
+    committee_master:
+      filename: "cm24.zip"
+      extracted: "cm.txt"
+      description: "Committee Master 2024"
+      url: "https://www.fec.gov/files/bulk-downloads/2024/cm24.zip"
+
+    candidate_master:
+      filename: "cn24.zip"
+      extracted: "cn.txt"
+      description: "Candidate Master 2024"
+      url: "https://www.fec.gov/files/bulk-downloads/2024/cn24.zip"
+
+    individual_contributions:
+      filename: "indiv24.zip"
+      extracted: "itcont.txt"
+      description: "Individual Contributions 2024"
+      url: "https://www.fec.gov/files/bulk-downloads/2024/indiv24.zip"
+      warning: "Large file (10+ GB)"
+
+# File Paths
+paths:
+  raw_data: "data/raw/"
+  intermediate: "data/intermediate/"
+  output: "data/output/"
+  logs: "logs/"
+  backup: "data/backup/"
+
+# Data Processing Settings
+processing:
+  chunk_size: 100000               # Rows per chunk for large files
+  parquet_compression: "snappy"    # Fast compression
+  csv_encoding: "utf-8"            # Output encoding
+  date_format: "%Y-%m-%d"          # ISO format
+
+  # Memory optimization
+  use_parquet: true                # Use Parquet for intermediate files
+  cache_data: true                 # Enable Streamlit caching
+  max_cache_age_hours: 24          # Refresh cache daily
+
+# Analysis Thresholds
+thresholds:
+  megadonor_amount: 1000000        # $1M+ = megadonor
+  late_cycle_threshold: 0.50       # 50%+ in Q4 = late-cycle spike
+  partisan_imbalance: 0.80         # 80%+ to one party = hard partisan
+  super_connected_threshold: 10    # 10+ committees = super-connected
+  dependency_threshold: 0.50       # 50%+ from megadonors = dependent
+
+# Committee Type Classifications
+committee_types:
+  super_pacs: ["O", "U"]           # Independent Expenditure committees
+  traditional_pacs: ["N", "Q", "V", "W"]
+  party_committees: ["X", "Y", "Z"]
+  candidate_committees: ["H", "S", "P"]
+  other: ["I", "C", "E", "D", "M"]
+
+# Partisan Classifications
+parties:
+  democratic: ["DEM", "D"]
+  republican: ["REP", "R"]
+  other: ["IND", "LIB", "GRE", "DFL", "CON", "UNK"]
+
+# Office Types
+offices:
+  presidential: "P"
+  senate: "S"
+  house: "H"
+
+  names:
+    P: "President"
+    S: "Senate"
+    H: "House"
+
+# Donor Tiers (based on total contributions)
+donor_tiers:
+  mega:
+    min: 1000000
+    name: "Mega ($1M+)"
+    color: "#d62728"              # Red
+
+  major:
+    min: 100000
+    max: 999999
+    name: "Major ($100K-$1M)"
+    color: "#ff7f0e"              # Orange
+
+  significant:
+    min: 10000
+    max: 99999
+    name: "Significant ($10K-$100K)"
+    color: "#2ca02c"              # Green
+
+  small:
+    min: 400
+    max: 9999
+    name: "Small ($400-$10K)"
+    color: "#1f77b4"              # Blue
+
+  nano:
+    min: 0
+    max: 399
+    name: "Nano (<$400)"
+    color: "#9467bd"              # Purple
+
+# Visualization Settings
+visualization:
+  default_chart_height: 400
+  color_scheme: "plotly"           # Plotly default colors
+
+  colors:
+    democratic: "#1f77b4"          # Blue
+    republican: "#d62728"          # Red
+    other: "#7f7f7f"               # Gray
+    super_pac: "#ff7f0e"           # Orange
+    traditional_pac: "#2ca02c"     # Green
+    party: "#9467bd"               # Purple
+
+  map:
+    projection: "albers usa"
+    hover_template: "<b>%{hovertext}</b><br>Spending: $%{z:,.0f}"
+
+# AI Chat Settings (for Phase 1, Hour 3)
+ai_chat:
+  enabled: true
+  provider: "openai"               # or "anthropic"
+  model: "gpt-4-turbo-preview"     # or "claude-sonnet-4-5"
+  temperature: 0.2                 # Low temperature for accuracy
+  max_tokens: 1500
+
+  system_prompt: |
+    You are a campaign finance data analyst assistant. You have access to FEC data
+    including committees, candidates, donors, and financial transactions for the
+    2023-2024 election cycle. Generate Python Pandas code to answer user questions.
+    Always validate your code before returning it.
+
+  example_queries:
+    - "What's the total Super PAC spending?"
+    - "Who are the top 5 megadonors?"
+    - "Which Democratic Senate candidates spent the most?"
+    - "Show me all committees in California"
+    - "What's the average donation to Republican presidential campaigns?"
+
+# ETL Settings
+etl:
+  auto_backup: true                # Backup before overwrite
+  backup_retention_days: 30        # Keep backups for 30 days
+  validate_totals: true            # Check financial reconciliation
+  tolerance_percent: 5             # ±5% tolerance for validation
+
+  notifications:
+    email_on_success: false
+    email_on_failure: true
+    log_level: "INFO"              # DEBUG, INFO, WARNING, ERROR
+
+# Performance Settings
+performance:
+  lazy_loading: true               # Load data on demand
+  pagination_size: 100             # Rows per page in tables
+  cache_ttl_hours: 24              # Time-to-live for cached data
+
+  limits:
+    max_rows_display: 10000        # Max rows in tables
+    max_chart_points: 5000         # Max points in scatter plots
+
+# Data Quality Checks
+validation:
+  required_columns:
+    committees: ["CMTE_ID", "CMTE_NM", "TTL_RECEIPTS", "TTL_DISB"]
+    candidates: ["CAND_ID", "CAND_NAME", "TTL_RECEIPTS", "TTL_DISB"]
+    donors: ["DONOR_KEY", "TOTAL_CONTRIB", "DONOR_TIER"]
+
+  expected_totals:
+    total_spending: 29830626545    # $29.83B
+    total_committees: 12370
+    total_candidates: 3861
+    megadonors: 574
+
+# Deployment Settings
+deployment:
+  environment: "production"        # development, staging, production
+  debug: false
+  streamlit_cloud: true
+
+  secrets:
+    use_env_file: true             # Load from .env
+    openai_api_key_var: "OPENAI_API_KEY"
+    anthropic_api_key_var: "ANTHROPIC_API_KEY"
+
+# Logging Configuration
+logging:
+  level: "INFO"
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  file: "logs/app.log"
+  max_bytes: 10485760              # 10 MB
+  backup_count: 5
