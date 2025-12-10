@@ -1,0 +1,17 @@
+Variable,Category,Type,Description
+CMTE_ID,Identifier,string,FEC committee ID
+CMTE_NM,Identifier,string,Committee name
+TTL_RECEIPTS,Financial,float,Total receipts
+TTL_DISBURSEMENTS,Financial,float,Total disbursements
+OFFICE_SEGMENT,Classification,string,PRES/SEN/HOU/OTHER
+TOTAL_DEM_DISB,Partisan,float,Total spending benefiting Democrats
+TOTAL_REP_DISB,Partisan,float,Total spending benefiting Republicans
+IMBALANCE_SCORE,Partisan,float,"|DEM-REP|/(DEM+REP), range [0,1]"
+PTY_GROUP,Partisan,string,DEM/REP/BIPARTISAN/NON_PARTISAN
+CANDIDATE_DIRECT_RATE,Alternative,float,% spending on specific candidates
+Q4_CONCENTRATION,Alternative,float,% spending in Oct-Nov 2024
+MEGADONOR_RECEIPTS,Donor,float,Receipts from $1M+ donors
+MEGADONOR_DEPENDENCY,Donor,float,Megadonor receipts / total receipts
+DEPENDENCY_CLASS,Donor,string,MEGADONOR_DEPENDENT/INFLUENCED/BROAD_BASED
+AVG_TRANSACTION_SIZE,Efficiency,float,Average transaction amount
+EFFICIENCY_CLASS,Efficiency,string,EFFICIENT/MODERATE/INEFFICIENT

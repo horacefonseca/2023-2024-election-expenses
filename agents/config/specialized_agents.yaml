@@ -1,0 +1,322 @@
+# Specialized Standalone Agents Configuration
+# 4 autonomous agents for complex analysis tasks
+# Updated: 2025-12-10
+
+agents:
+  network_analyst:
+    name: "Network Analyst Agent"
+    type: "standalone"
+    role: "donor_committee_network_analysis"
+    autonomous: true
+    resource_intensive: true
+
+    description: |
+      Analyzes donor-committee funding networks to identify coordination patterns,
+      super-connected hubs, and oligarchic clusters using graph theory.
+
+    capabilities:
+      - donor_committee_network_construction
+      - centrality_metrics_calculation
+      - community_detection
+      - super_connector_identification
+      - coordination_pattern_analysis
+      - betweenness_centrality_analysis
+      - clustering_coefficient_calculation
+
+    algorithms:
+      community_detection: "louvain"  # or "label_propagation", "girvan_newman"
+      centrality: ["degree", "betweenness", "eigenvector", "pagerank"]
+      clustering: "hierarchical"
+
+    tools:
+      - networkx
+      - igraph
+      - graph_tool
+      - plotly_network
+      - matplotlib
+
+    inputs:
+      donor_data:
+        file: "input_oligarchy_donors.csv"
+        required_columns: ["DONOR_KEY", "TOTAL_CONTRIB", "NUM_COMMITTEES"]
+
+      contribution_data:
+        file: "itemized_contributions.parquet"
+        required_columns: ["CMTE_ID", "DONOR_KEY", "TRANSACTION_AMT"]
+
+      committee_data:
+        file: "all_committees_powerbi.csv"
+        required_columns: ["CMTE_ID", "CMTE_NM", "CATEGORY"]
+
+    outputs:
+      network_metrics:
+        file: "network_analysis_results.csv"
+        columns: ["NODE_ID", "NODE_TYPE", "DEGREE", "BETWEENNESS", "CLUSTER"]
+
+      visualization:
+        file: "donor_committee_network.html"
+        format: "interactive_plotly"
+
+      report:
+        file: "network_analysis_report.md"
+        sections: ["summary", "key_findings", "visualization", "methodology"]
+
+      graph_data:
+        file: "network_graph.graphml"
+        format: "graphml"  # For further analysis in Gephi/Cytoscape
+
+    parameters:
+      min_contribution: 1000  # Only edges ≥ $1K
+      min_degree: 2  # Exclude isolated nodes
+      max_nodes: 50000  # Performance limit
+      layout_algorithm: "force_atlas2"
+      detect_communities: true
+      calculate_centrality: true
+
+    execution:
+      trigger: "on_demand"  # or "scheduled", "event_driven"
+      max_runtime_minutes: 30
+      memory_limit_gb: 8
+      parallel: true
+      checkpoint_interval_minutes: 5  # Save progress every 5 min
+
+    performance:
+      chunk_size: 10000  # Process network in chunks
+      use_gpu: false  # Enable if GPU available
+      cache_results: true
+      cache_ttl_hours: 24
+
+  temporal_analyst:
+    name: "Temporal Analyst Agent"
+    type: "standalone"
+    role: "time_series_pattern_detection"
+    autonomous: true
+    resource_intensive: true
+
+    description: |
+      Analyzes spending patterns over time to detect late-cycle spikes,
+      seasonal trends, and synchronized donor behavior.
+
+    capabilities:
+      - time_series_decomposition
+      - late_cycle_spike_detection
+      - seasonal_pattern_analysis
+      - trend_forecasting
+      - synchronized_spending_detection
+      - monthly_aggregation
+      - quarterly_comparison
+
+    algorithms:
+      decomposition: "STL"  # Seasonal-Trend decomposition using LOESS
+      forecasting: "prophet"  # Facebook Prophet for trend prediction
+      change_point_detection: "PELT"  # Pruned Exact Linear Time
+
+    tools:
+      - pandas
+      - statsmodels
+      - prophet
+      - ruptures  # Change point detection
+      - matplotlib
+      - plotly
+
+    inputs:
+      transaction_data:
+        file: "itemized_records.parquet"
+        required_columns: ["TRANSACTION_DT", "TRANSACTION_AMT", "CMTE_ID"]
+
+      committee_data:
+        file: "all_committees_powerbi.csv"
+        required_columns: ["CMTE_ID", "CATEGORY", "OFFICE_SEGMENT"]
+
+    outputs:
+      temporal_metrics:
+        file: "temporal_analysis_results.csv"
+        columns: ["DATE", "TOTAL_SPENDING", "TREND", "SEASONAL", "RESIDUAL"]
+
+      late_cycle_spikes:
+        file: "late_cycle_committees.csv"
+        columns: ["CMTE_ID", "Q4_CONCENTRATION", "SPIKE_MAGNITUDE"]
+
+      forecast:
+        file: "spending_forecast_2026.csv"
+        columns: ["DATE", "FORECAST", "LOWER_BOUND", "UPPER_BOUND"]
+
+      visualization:
+        file: "temporal_patterns.html"
+        format: "interactive_plotly"
+
+    parameters:
+      aggregation_period: "monthly"  # or "weekly", "daily"
+      late_cycle_threshold: 0.50  # 50%+ in Q4 = spike
+      forecast_horizon_months: 24  # Predict 2 years ahead
+      detect_change_points: true
+      min_penalty: 3  # For PELT algorithm
+
+    execution:
+      trigger: "scheduled"  # Run monthly
+      schedule: "0 0 1 * *"  # 1st of month at midnight
+      max_runtime_minutes: 20
+      memory_limit_gb: 4
+      parallel: true
+
+  predictive_analyst:
+    name: "Predictive Analyst Agent"
+    type: "standalone"
+    role: "forecasting_and_modeling"
+    autonomous: true
+    resource_intensive: true
+
+    description: |
+      Builds predictive models to forecast 2026 spending, donor behavior,
+      and electoral outcomes using machine learning.
+
+    capabilities:
+      - spending_forecasting
+      - donor_behavior_prediction
+      - election_outcome_modeling
+      - feature_engineering
+      - model_training
+      - hyperparameter_tuning
+      - cross_validation
+
+    algorithms:
+      regression: ["random_forest", "xgboost", "linear_regression"]
+      classification: ["logistic_regression", "gradient_boosting"]
+      time_series: ["arima", "prophet", "lstm"]
+
+    tools:
+      - scikit_learn
+      - xgboost
+      - tensorflow
+      - keras
+      - prophet
+      - optuna  # Hyperparameter optimization
+
+    inputs:
+      historical_data:
+        file: "complete_campaign_finance_breakdown.csv"
+        cycles: [2016, 2018, 2020, 2022, 2024]
+
+      feature_data:
+        files:
+          - "all_committees_powerbi.csv"
+          - "all_candidates_powerbi.csv"
+          - "input_oligarchy_donors.csv"
+
+    outputs:
+      forecast_2026:
+        file: "spending_forecast_2026.csv"
+        columns: ["CATEGORY", "PREDICTED_SPENDING", "CONFIDENCE_INTERVAL"]
+
+      model_metrics:
+        file: "model_performance.csv"
+        columns: ["MODEL", "RMSE", "MAE", "R2_SCORE"]
+
+      feature_importance:
+        file: "feature_importance.csv"
+        columns: ["FEATURE", "IMPORTANCE_SCORE"]
+
+      trained_model:
+        file: "trained_model.pkl"
+        format: "pickle"
+
+    parameters:
+      test_split: 0.2
+      cross_validation_folds: 5
+      hyperparameter_trials: 100
+      early_stopping_rounds: 50
+      random_state: 42
+
+    execution:
+      trigger: "on_demand"
+      max_runtime_minutes: 60
+      memory_limit_gb: 8
+      parallel: true
+      use_gpu: true  # If available
+
+  compliance_auditor:
+    name: "Compliance Auditor Agent"
+    type: "standalone"
+    role: "anomaly_detection_and_validation"
+    autonomous: true
+    resource_intensive: false
+
+    description: |
+      Detects anomalies in FEC data (unusual donations, missing IDs, negative amounts)
+      and validates compliance with FEC reporting rules.
+
+    capabilities:
+      - anomaly_detection
+      - data_quality_validation
+      - fec_rule_compliance_checking
+      - outlier_identification
+      - duplicate_detection
+      - missing_data_analysis
+
+    algorithms:
+      anomaly_detection: "isolation_forest"  # or "local_outlier_factor", "one_class_svm"
+      clustering: "dbscan"  # For grouping similar anomalies
+
+    tools:
+      - scikit_learn
+      - pandas
+      - great_expectations  # Data validation framework
+      - numpy
+
+    inputs:
+      all_data:
+        files:
+          - "all_committees_powerbi.csv"
+          - "all_candidates_powerbi.csv"
+          - "input_oligarchy_donors.csv"
+          - "itemized_contributions.parquet"
+
+    outputs:
+      anomaly_report:
+        file: "anomaly_report.csv"
+        columns: ["RECORD_ID", "ANOMALY_TYPE", "SEVERITY", "DESCRIPTION"]
+
+      validation_results:
+        file: "data_quality_report.csv"
+        columns: ["CHECK", "PASSED", "FAILED", "DETAILS"]
+
+      flagged_transactions:
+        file: "flagged_transactions.csv"
+        columns: ["TRANSACTION_ID", "AMOUNT", "FLAG_REASON"]
+
+    validation_rules:
+      - name: "no_negative_amounts"
+        check: "TRANSACTION_AMT >= 0"
+
+      - name: "no_missing_ids"
+        check: "CMTE_ID.notnull() AND CAND_ID.notnull()"
+
+      - name: "contribution_limits"
+        check: "TRANSACTION_AMT <= 3300"  # Per FEC individual limit
+        exceptions: ["Super PAC"]  # Unlimited to Super PACs
+
+      - name: "no_duplicates"
+        check: "SUB_ID.is_unique()"
+
+      - name: "valid_dates"
+        check: "TRANSACTION_DT.between('2023-01-01', '2024-12-31')"
+
+    parameters:
+      contamination: 0.01  # Expected % of outliers
+      outlier_z_score_threshold: 3
+      duplicate_threshold: 0.95  # Fuzzy matching similarity
+
+    execution:
+      trigger: "event_driven"  # Run after ETL pipeline
+      max_runtime_minutes: 15
+      memory_limit_gb: 4
+      parallel: true
+
+# Global Settings for Specialized Agents
+settings:
+  max_concurrent_specialized_agents: 4
+  communication_with_core_agents: true
+  auto_report_to_manager: true
+  checkpoint_enabled: true
+  checkpoint_dir: "checkpoints/"
+  log_level: "DEBUG"

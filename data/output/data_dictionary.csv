@@ -1,0 +1,19 @@
+Column,Description,Use
+CMTE_ID,Unique Super PAC Committee ID,Primary key
+CMTE_NM,Committee Name,Identification
+OFFICE_SEGMENT,Office Segment: PRES/SEN/HOU/OTHER,Segmentation variable
+PTY_GROUP,Party Group: DEM/REP/BIPARTISAN/NON_PARTISAN/UNCLASSIFIED,Grouping variable
+IMBALANCE_SCORE,Partisan Imbalance Score (0-1): |DEM-REP|/(DEM+REP),Key hypothesis metric
+GRIDLOCK_PROPENSITY,Gridlock Propensity: IND_EXPEND/TTL_DISBURSEMENTS,Key hypothesis metric (dependent variable)
+TOTAL_DEM_DISB,Total disbursements to Democratic recipients,Partisan spending analysis
+TOTAL_REP_DISB,Total disbursements to Republican recipients,Partisan spending analysis
+TOTAL_OTHER_DISB,Total disbursements to other recipients,Non-partisan spending analysis
+TOTAL_PARTISAN_DISB,Total partisan disbursements (DEM + REP),Total partisan spending
+TTL_RECEIPTS,Total receipts,Financial scale
+TTL_DISBURSEMENTS,Total disbursements,Financial scale/normalization
+IND_EXPEND,Independent expenditures,Gridlock proxy
+TTL_CONTRIB_TO_OTHER_CMTE,Total contributions to other committees,Network analysis
+PTY_COORD_EXPEND,Party coordinated expenditures,Party coordination measure
+CMTE_TP,Committee type,Classification
+CMTE_DSGN,Committee designation,Classification
+CVG_END_DT,Coverage end date,Time context

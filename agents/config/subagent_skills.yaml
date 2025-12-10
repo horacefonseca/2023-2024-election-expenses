@@ -1,0 +1,289 @@
+# Subagent Skills - Attachable to Core Agents
+# Skills that enhance agent capabilities without creating new agents
+# Updated: 2025-12-10
+
+skills:
+  # ============================================================================
+  # DATA ANALYST SKILLS
+  # ============================================================================
+
+  fec_code_expert:
+    name: "FEC Code Expert"
+    category: "data_analysis"
+    word_count: 118
+    attachable_to: ["data_analyst", "backend_specialist"]
+    skill_level: "expert"
+
+    description: |
+      Interprets all Federal Election Commission type codes beyond basic O/U/N/Q classifications.
+      **Committee types:** B (Lobbyist/Registrant PAC), D (Leadership PAC), M (Generic PAC),
+      T (Separate Segregated Fund - corporate/union), W (PAC with Non-Contribution Account).
+      **Designations:** A (Authorized by candidate), J (Joint Fundraiser), P (Principal campaign),
+      U (Unauthorized). **Special codes:** D2 (Delegate Committee), C (Communication Cost),
+      E (Electioneering Communication), I (Independent Expenditor - Person not committee).
+      Maps committee IDs to sponsoring organizations using CONNECTED_ORG_NM field. Identifies
+      hybrid PACs (Carey committees) with both contribution and independent expenditure accounts.
+      Distinguishes SSFs (Separate Segregated Funds) from non-connected PACs via organizational linkage.
+
+    tools: ["pandas", "fec_documentation"]
+    outputs: ["committee_classification", "sponsor_mapping"]
+
+  partisan_classifier:
+    name: "Partisan Classifier"
+    category: "political_analysis"
+    word_count: 110
+    attachable_to: ["data_analyst", "sentiment_analyst"]
+    skill_level: "expert"
+
+    description: |
+      Determines true partisan alignment of committees and donors through spending pattern analysis,
+      not merely reported affiliation. Traces transaction flows from donors → committees → candidates
+      to calculate partisan ratios: DEM_SPENDING / (DEM + REP) spending. **Classification logic:**
+      ≥0.80 imbalance = hard partisan (DEM or REP), 0.20-0.80 = bipartisan, <0.20 or no partisan
+      spending = non-partisan. Handles edge cases: committees supporting both primary opponents
+      (marked bipartisan), single-candidate Super PACs (inherit candidate party), joint fundraisers
+      (proportional party split). Cross-validates against CAND_PTY_AFFILIATION and CMTE_PTY_AFFILIATION
+      fields, flagging discrepancies for "shadow partisan" committees claiming neutrality while
+      spending 90/10. Identifies party-switchers by tracking spending changes across cycles.
+
+    tools: ["pandas", "networkx"]
+    outputs: ["party_alignment", "imbalance_score", "partisan_flags"]
+
+  donor_tier_analyzer:
+    name: "Donor Tier Analyzer"
+    category: "donor_analysis"
+    word_count: 100
+    attachable_to: ["data_analyst", "network_analyst"]
+    skill_level: "advanced"
+
+    description: |
+      Categorizes donors into five tiers based on total 2023-2024 cycle contributions:
+      **Mega** ($1M+, 574 donors, 82.8% of funds), **Major** ($100K-$1M, 2,069 donors, 12.2%),
+      **Significant** ($10K-$100K, 5,190 donors, 3.4%), **Small** ($400-$10K, 44,978 donors, 1.4%),
+      **Nano** (<$400, 57,853 donors, 0.3%). Calculates donor diversification metrics: committees
+      supported, geographic spread, partisan concentration. Identifies "super-connected" donors
+      (10+ committees) and portfolio strategies (presidential-only vs multi-office). Tracks donor
+      tier mobility across cycles (first-time megadonors, downgraded majors). Flags suspicious
+      patterns: bundled small donations from same address, straw donor indicators.
+
+    tools: ["pandas", "numpy"]
+    outputs: ["donor_tier", "diversification_score", "tier_transitions"]
+
+  geographic_analyzer:
+    name: "Geographic Analyzer"
+    category: "spatial_analysis"
+    word_count: 95
+    attachable_to: ["data_analyst", "frontend_specialist"]
+    skill_level: "advanced"
+
+    description: |
+      Analyzes state-level and ZIP code-level concentration of donors and spending. Calculates
+      geographic Gini coefficients showing inequality across states (CA/NY/TX/FL dominance).
+      **Metrics:** donor density per capita, spending per electoral vote, urban vs rural patterns,
+      swing state targeting. Maps committee headquarters to lobbying influence (DC-based PACs vs
+      grassroots). Identifies "donor deserts" (states with <10 megadonors) and "donor hubs"
+      (10+ megadonors in single ZIP code). Cross-references with Census data for demographic
+      analysis: donor rates by income bracket, age cohort. Tracks interstate donor flows: CA donors
+      funding TX Senate races.
+
+    tools: ["geopandas", "plotly", "census_api"]
+    outputs: ["state_metrics", "zip_heatmap", "donor_flows"]
+
+  # ============================================================================
+  # SENTIMENT ANALYST SKILLS
+  # ============================================================================
+
+  topic_modeler:
+    name: "Topic Modeler"
+    category: "nlp_analysis"
+    word_count: 105
+    attachable_to: ["sentiment_analyst", "data_analyst"]
+    skill_level: "expert"
+
+    description: |
+      Identifies dominant campaign themes in committee messaging using Latent Dirichlet Allocation
+      (LDA) and BERTopic models. **Common topics:** healthcare (Medicare expansion vs privatization),
+      immigration (border security vs pathway to citizenship), economy (tax cuts vs infrastructure),
+      abortion (pro-choice vs pro-life), climate (clean energy vs fossil fuels). Tracks topic
+      evolution across election cycle: Q1 focuses on primaries/base mobilization, Q4 shifts to
+      swing voter persuasion. Measures topic saturation: committees oversaturating healthcare
+      messaging show diminishing returns. Identifies "wedge issues" where bipartisan committees
+      avoid messaging. Cross-references topics with spending spikes: economy messaging surges
+      during inflation reports.
+
+    tools: ["gensim", "bertopic", "transformers"]
+    outputs: ["topic_distribution", "topic_trends", "keyword_clusters"]
+
+  bias_detector:
+    name: "Bias Detector"
+    category: "media_analysis"
+    word_count: 100
+    attachable_to: ["sentiment_analyst"]
+    skill_level: "advanced"
+
+    description: |
+      Detects partisan framing and emotional bias in committee communications using lexicon analysis
+      and transformer models. **Framing indicators:** "radical left" vs "MAGA extremism", "freedom"
+      vs "corporate greed", "law and order" vs "police reform". Measures sentiment polarity (-1
+      negative to +1 positive) and emotional intensity (0 neutral to 1 highly charged). Identifies
+      dog whistles: coded language targeting specific demographics. **Emotional appeals:** fear
+      ("threat to democracy", "invasion"), hope ("brighter future", "change"), anger ("rigged system",
+      "corruption"). Compares self-reported "non-partisan" committees against detected bias scores,
+      flagging misclassification. Tracks bias consistency: committees shifting tone based on audience.
+
+    tools: ["vader", "transformers", "perspective_api"]
+    outputs: ["bias_score", "emotional_profile", "framing_analysis"]
+
+  narrative_tracker:
+    name: "Narrative Tracker"
+    category: "longitudinal_analysis"
+    word_count: 95
+    attachable_to: ["sentiment_analyst", "temporal_analyst"]
+    skill_level: "advanced"
+
+    description: |
+      Tracks evolving political narratives across election cycle using time-series topic modeling.
+      Identifies **narrative arcs:** underdog-to-frontrunner, scandal recovery, late surge.
+      Measures narrative dominance: percentage of messaging devoted to each storyline. Detects
+      narrative synchronization: multiple committees adopting identical talking points within
+      72 hours (coordination indicator). **Storyline categories:** candidate biography, policy
+      vision, opponent attacks, endorsements, crisis response. Compares narrative strategies:
+      Democratic committees emphasize policy specifics, Republican committees emphasize cultural
+      values. Tracks meme propagation: viral phrases spreading across committee networks. Identifies
+      effective narratives via spending correlation.
+
+    tools: ["nltk", "spacy", "dynamic_topic_models"]
+    outputs: ["narrative_timeline", "synchronization_score", "meme_propagation"]
+
+  # ============================================================================
+  # BACKEND SPECIALIST SKILLS
+  # ============================================================================
+
+  query_optimizer:
+    name: "Query Optimizer"
+    category: "performance"
+    word_count: 90
+    attachable_to: ["backend_specialist", "data_analyst"]
+    skill_level: "expert"
+
+    description: |
+      Optimizes Pandas/SQL queries for sub-second response on large datasets (110K donors,
+      12K committees). **Techniques:** vectorized operations (avoid Python loops), categorical
+      dtype for low-cardinality fields (PARTY: 10 unique → 90% memory reduction), chunked reading
+      (100K rows at a time for 3GB files), index creation on filter columns (CMTE_ID, TRANSACTION_DT).
+      Uses query profiling (pd.DataFrame.memory_usage(), cProfile) to identify bottlenecks. Converts
+      slow operations to DuckDB for 10-100x speedup on aggregations. Implements lazy evaluation:
+      load data only when needed, not upfront. Caches expensive computations (Gini coefficient,
+      network metrics). Parallelizes independent operations using Dask.
+
+    tools: ["pandas", "duckdb", "dask", "cProfile"]
+    outputs: ["optimized_queries", "performance_metrics"]
+
+  data_validator:
+    name: "Data Validator"
+    category: "quality_assurance"
+    word_count: 100
+    attachable_to: ["backend_specialist", "compliance_auditor"]
+    skill_level: "advanced"
+
+    description: |
+      Comprehensive data quality validation using Great Expectations framework. **Validation checks:**
+      schema (expected columns present, correct dtypes), range (spending ≥0, dates within 2023-2024),
+      uniqueness (CMTE_ID no duplicates), referential integrity (all CMTE_ID in contributions exist
+      in committees table), completeness (required fields ≥95% populated), consistency (total receipts
+      ≈ total disbursements ±10%). Generates validation reports with pass/fail rates, failed records
+      exported for review. Implements data profiling: distribution analysis, outlier detection
+      (Z-score >3), missing value patterns. Cross-validates against FEC published totals: committee
+      count, total spending match official reports ±1%. Tracks validation history across ETL runs.
+
+    tools: ["great_expectations", "pandas", "pydantic"]
+    outputs: ["validation_report", "failed_records", "quality_score"]
+
+  cache_manager:
+    name: "Cache Manager"
+    category: "performance"
+    word_count: 85
+    attachable_to: ["backend_specialist", "deployment_analyst"]
+    skill_level: "advanced"
+
+    description: |
+      Intelligent caching strategies for Streamlit apps using @st.cache_data decorator. **Cache
+      policies:** data loading (TTL 24 hours), expensive computations (Lorenz curve, network
+      metrics - persist until data changes), API calls (1 hour expiration). Implements cache
+      invalidation: clear on ETL refresh, selective clear for updated tables only. Uses Redis
+      for distributed caching across multiple app instances. Monitors cache hit rates (target
+      >80%), size limits (max 1GB). Implements cache warming: preload common queries at startup.
+      Handles cache stampede: single computation serves multiple concurrent requests.
+
+    tools: ["streamlit", "redis", "memcached"]
+    outputs: ["cache_config", "hit_rate_report"]
+
+  # ============================================================================
+  # FRONTEND SPECIALIST SKILLS
+  # ============================================================================
+
+  chart_optimizer:
+    name: "Chart Optimizer"
+    category: "visualization"
+    word_count: 90
+    attachable_to: ["frontend_specialist"]
+    skill_level: "advanced"
+
+    description: |
+      Optimizes Plotly charts for performance and clarity with large datasets. **Techniques:**
+      data downsampling (show 5K points max in scatter plots, aggregate rest), chart decimation
+      (display every Nth point when zoomed out), WebGL rendering (gpu-accelerated for 10K+ points),
+      lazy loading (render chart only when visible). **Design principles:** colorblind-safe
+      palettes (Wong 2011), accessible tooltips (ARIA labels), mobile-responsive layouts (stacked
+      on small screens), consistent branding (campaign finance blue/red). Reduces chart load time
+      from 5s → 500ms. Implements progressive rendering: show skeleton → partial data → full chart.
+
+    tools: ["plotly", "altair", "vega_lite"]
+    outputs: ["optimized_charts", "performance_report"]
+
+  ux_analyzer:
+    name: "UX Analyzer"
+    category: "user_experience"
+    word_count: 95
+    attachable_to: ["frontend_specialist"]
+    skill_level: "advanced"
+
+    description: |
+      Analyzes user interaction patterns and optimizes dashboard UX. Tracks **user journey:**
+      entry page → filter selection → chart interaction → data export. Measures engagement
+      metrics: time on page, bounce rate, filter usage frequency. Implements A/B testing:
+      sidebar vs top navigation, table vs card layout. **Accessibility audit:** keyboard navigation
+      (tab order logical), screen reader support (alt text on charts), color contrast (WCAG AA),
+      font size (minimum 14px). Identifies pain points: users abandoning complex filters,
+      confusion on partisan imbalance score. Recommends improvements: guided tours, contextual
+      help tooltips, simplified terminology ("Oligarchy" → "Concentration").
+
+    tools: ["google_analytics", "hotjar", "axe_accessibility"]
+    outputs: ["ux_report", "heatmaps", "recommendations"]
+
+  mobile_adapter:
+    name: "Mobile Adapter"
+    category: "responsive_design"
+    word_count: 85
+    attachable_to: ["frontend_specialist"]
+    skill_level: "intermediate"
+
+    description: |
+      Adapts desktop dashboards for mobile screens (320px-768px width). **Responsive strategies:**
+      stacked layouts (4 columns → 1 column), collapsible sidebars, touch-optimized controls
+      (larger buttons, swipe gestures), simplified charts (hide legend on mobile, show on hover).
+      Tests across devices: iPhone SE (small), iPad (medium), desktop (large). Reduces mobile
+      load time: compress images, minify CSS/JS, defer non-critical resources. Implements
+      progressive web app (PWA): offline mode, add to home screen. Mobile-specific features:
+      geolocation for local donor maps, camera for QR code scanning.
+
+    tools: ["streamlit", "css", "pwa_builder"]
+    outputs: ["mobile_layouts", "device_testing_report"]
+
+# Global Settings
+settings:
+  skill_versioning: true  # Track skill versions
+  hot_reload: true  # Skills can be updated without restart
+  skill_dependencies: true  # Skills can require other skills
+  max_skills_per_agent: 10
+  skill_priority: "user_defined"  # or "auto_prioritize"

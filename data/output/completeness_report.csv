@@ -1,0 +1,6 @@
+Dataset,Rows,Columns,Completeness,Status
+Super PAC Summary,2604,50,45.2%,FAIL
+Partisan Metrics,8798,7,98.4%,PASS
+Alternative Metrics,2604,10,100.0%,PASS
+Megadonor Influence,2604,7,83.5%,FAIL
+Efficiency Metrics,2604,7,97.1%,PASS

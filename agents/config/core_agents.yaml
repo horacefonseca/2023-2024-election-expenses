@@ -1,0 +1,242 @@
+# Core Agents Configuration
+# 7 primary agents with skill slots for subagent capabilities
+# Updated: 2025-12-10
+
+agents:
+  manager:
+    name: "Manager Agent"
+    role: "orchestrator"
+    priority: 1
+    autonomous: false  # Requires user approval for major decisions
+
+    base_capabilities:
+      - project_coordination
+      - quality_assurance
+      - stakeholder_communication
+      - sprint_management
+      - resource_allocation
+
+    skill_slots: 5  # Can attach up to 5 subagent skills
+    attached_skills: []  # Empty initially
+
+    tools:
+      - todo_management
+      - progress_tracking
+      - decision_logging
+      - team_communication
+
+    interaction_model:
+      can_delegate_to: ["all"]
+      requires_approval_from: ["user"]
+      reports_to: ["user"]
+
+    resources:
+      max_parallel_tasks: 10
+      memory_limit_mb: 512
+
+  data_analyst:
+    name: "Data Analyst Agent"
+    role: "political_data_expert"
+    priority: 2
+    autonomous: true
+
+    base_capabilities:
+      - political_entity_classification  # 90-120 words (Democrats/Republicans/House/Senate/etc)
+      - fec_data_parsing
+      - statistical_analysis
+      - data_quality_validation
+
+    skill_slots: 8
+    attached_skills:
+      - fec_code_expert
+      - partisan_classifier
+      - donor_tier_analyzer
+      - geographic_analyzer
+
+    tools:
+      - pandas
+      - numpy
+      - scipy
+      - fec_api
+
+    interaction_model:
+      can_delegate_to: ["backend_specialist", "web_scraper"]
+      requires_approval_from: ["manager"]
+      reports_to: ["manager", "user"]
+
+    resources:
+      max_parallel_tasks: 4
+      memory_limit_mb: 2048
+
+  deployment_analyst:
+    name: "Deployment Analyst Agent"
+    role: "production_deployment"
+    priority: 3
+    autonomous: true
+
+    base_capabilities:
+      - powerbi_deployment
+      - pipeline_orchestration
+      - performance_monitoring
+      - cloud_infrastructure
+
+    skill_slots: 5
+    attached_skills:
+      - streamlit_optimizer
+      - azure_connector
+
+    tools:
+      - azure_data_factory
+      - streamlit_cloud
+      - docker
+      - kubernetes
+
+    interaction_model:
+      can_delegate_to: ["backend_specialist"]
+      requires_approval_from: ["manager"]
+      reports_to: ["manager"]
+
+    resources:
+      max_parallel_tasks: 3
+      memory_limit_mb: 1024
+
+  web_scraper:
+    name: "Web Scraper Agent"
+    role: "external_data_collection"
+    priority: 4
+    autonomous: true
+
+    base_capabilities:
+      - fec_api_integration
+      - external_source_scraping
+      - rate_limit_management
+      - data_extraction
+
+    skill_slots: 6
+    attached_skills:
+      - opensecrets_scraper
+      - ballotpedia_scraper
+      - news_aggregator
+
+    tools:
+      - requests
+      - beautifulsoup
+      - selenium
+      - scrapy
+
+    interaction_model:
+      can_delegate_to: []
+      requires_approval_from: ["manager", "data_analyst"]
+      reports_to: ["data_analyst", "backend_specialist"]
+
+    resources:
+      max_parallel_tasks: 5
+      memory_limit_mb: 1024
+      rate_limit_per_hour: 1000
+
+  frontend_specialist:
+    name: "Frontend Specialist Agent"
+    role: "ui_visualization"
+    priority: 3
+    autonomous: true
+
+    base_capabilities:
+      - dashboard_development
+      - interactive_visualization
+      - ux_design
+      - mobile_optimization
+
+    skill_slots: 6
+    attached_skills:
+      - chart_optimizer
+      - ux_analyzer
+      - mobile_adapter
+
+    tools:
+      - streamlit
+      - plotly
+      - d3js
+      - react
+
+    interaction_model:
+      can_delegate_to: []
+      requires_approval_from: ["manager"]
+      reports_to: ["manager", "user"]
+
+    resources:
+      max_parallel_tasks: 3
+      memory_limit_mb: 1024
+
+  backend_specialist:
+    name: "Backend Specialist Agent"
+    role: "data_infrastructure"
+    priority: 2
+    autonomous: true
+
+    base_capabilities:
+      - database_architecture
+      - etl_pipeline_engineering
+      - api_development
+      - performance_optimization
+
+    skill_slots: 7
+    attached_skills:
+      - query_optimizer
+      - cache_manager
+      - data_validator
+
+    tools:
+      - postgresql
+      - duckdb
+      - sqlalchemy
+      - fastapi
+
+    interaction_model:
+      can_delegate_to: ["web_scraper"]
+      requires_approval_from: ["manager"]
+      reports_to: ["manager", "deployment_analyst"]
+
+    resources:
+      max_parallel_tasks: 5
+      memory_limit_mb: 4096
+
+  sentiment_analyst:
+    name: "Sentiment Analyst Agent"
+    role: "political_sentiment_analysis"
+    priority: 4
+    autonomous: true
+
+    base_capabilities:
+      - political_sentiment_classification  # 90-120 words
+      - partisan_messaging_analysis
+      - emotional_appeal_detection
+      - narrative_tracking
+
+    skill_slots: 6
+    attached_skills:
+      - topic_modeler
+      - bias_detector
+      - narrative_tracker
+
+    tools:
+      - spacy
+      - transformers
+      - vader_sentiment
+      - sklearn
+
+    interaction_model:
+      can_delegate_to: ["web_scraper"]
+      requires_approval_from: ["manager", "data_analyst"]
+      reports_to: ["manager", "data_analyst"]
+
+    resources:
+      max_parallel_tasks: 3
+      memory_limit_mb: 3072
+
+# Global Settings
+settings:
+  max_concurrent_agents: 7
+  communication_protocol: "message_queue"
+  logging_level: "INFO"
+  skill_hot_reload: true  # Allow skills to be attached/detached at runtime
+  coordination_mode: "hierarchical"  # manager → specialists → workers

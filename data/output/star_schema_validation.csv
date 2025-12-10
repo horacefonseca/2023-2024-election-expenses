@@ -1,0 +1,7 @@
+Test,Result,Details
+Donor Keys Match,PASS,"110,664 fact keys / 110,664 dim keys"
+Committee IDs Match,PASS,"1,188 fact keys / 12,370 dim keys"
+Orphan Donor Records,0 orphans,0 records in fact not in dimension
+Orphan Committee Records,0 orphans,0 records in fact not in dimension
+Date Completeness,100.0% complete,"559,892 / 559,892 records"
+Amount Completeness,100.0% complete,"559,892 / 559,892 records"

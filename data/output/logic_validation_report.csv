@@ -1,0 +1,5 @@
+Test,Failed_Records,Status
+Negative Disbursements,0,PASS
+"IMBALANCE_SCORE Range [0,1]",0,PASS
+"Q4_CONCENTRATION Range [0,1]",0,PASS
+"MEGADONOR_DEPENDENCY Range [0,1]",0,PASS
