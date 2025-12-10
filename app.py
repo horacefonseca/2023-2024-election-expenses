@@ -59,7 +59,7 @@ with st.sidebar:
     st.markdown("### 📊 Navigation")
     page = st.radio(
         "Select Page:",
-        ["Executive Summary", "Committee Analysis", "Candidate Analysis", "Oligarchy Analysis", "AI Chat"],
+        ["Executive Summary", "Committee Analysis", "Candidate Analysis", "Oligarchy Analysis", "Hypothesis Testing", "AI Chat"],
         label_visibility="collapsed"
     )
 
@@ -227,6 +227,16 @@ elif page == "Oligarchy Analysis":
     st.markdown("- Lorenz curve visualization")
     st.markdown("- Top 20 Megadonors (Elon Musk: $252M)")
     st.markdown("- Donor tier distribution")
+
+elif page == "Hypothesis Testing":
+    st.info("✅ This page is available! Navigate to **Pages → 6_Hypothesis_Testing** in sidebar")
+    st.markdown("### Features:")
+    st.markdown("- H1: Oligarchic Concentration (Gini coefficient, Lorenz curve)")
+    st.markdown("- H2: Strategic Timing (Q4 late-cycle analysis)")
+    st.markdown("- H3: Partisan Asymmetry (DEM vs REP networks)")
+    st.markdown("- Power Dynamics: Superdonors vs People-level")
+    st.markdown("- PAC Partisan Classification")
+    st.markdown("\n**👉 Use Streamlit's page navigation in the sidebar!**")
 
 elif page == "AI Chat":
     st.info("🚧 AI Chat feature coming in Hour 3")
