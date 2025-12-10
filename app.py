@@ -213,46 +213,18 @@ if page == "Executive Summary":
         height=400
     )
 
-elif page == "Committee Analysis":
-    st.info("🚧 Committee Analysis page coming in Hour 2")
-    st.markdown("Will include:")
-    st.markdown("- Interactive filters (Committee Type, Category, Spending Range)")
-    st.markdown("- Scatter plot: Receipts vs Disbursements")
-    st.markdown("- Bar chart: Top 20 Committees")
-    st.markdown("- Histogram: Committee Size Distribution")
+elif page in ["Committee Analysis", "Candidate Analysis", "Oligarchy Analysis", "Hypothesis Testing", "AI Chat"]:
+    st.info("✅ **All dashboard pages are now available!**")
+    st.markdown("### 📄 Navigate using the sidebar:")
+    st.markdown("""
+    - **2_Committee_Analysis** - Explore 12,370+ PACs and committees with interactive filters
+    - **3_Candidate_Analysis** - Analyze 3,861 federal candidates by office, party, and state
+    - **4_Oligarchy_Analysis** - Deep dive into donor concentration with Gini coefficients and Lorenz curves
+    - **5_AI_Chat** - Ask questions in natural language (Demo mode available)
+    - **6_Hypothesis_Testing** - Statistical analysis of oligarchic patterns
 
-elif page == "Candidate Analysis":
-    st.info("🚧 Candidate Analysis page coming in Hour 2")
-    st.markdown("Will include:")
-    st.markdown("- Filters: Office, Party, State, Spending Range")
-    st.markdown("- Bar charts: Spending by Office and Party")
-    st.markdown("- State-level spending map")
-    st.markdown("- Top 20 Candidates table")
-
-elif page == "Oligarchy Analysis":
-    st.info("🚧 Oligarchy Analysis page coming in Hour 3")
-    st.markdown("Will include:")
-    st.markdown("- Gini coefficient: 0.9849")
-    st.markdown("- Lorenz curve visualization")
-    st.markdown("- Top 20 Megadonors (Elon Musk: $252M)")
-    st.markdown("- Donor tier distribution")
-
-elif page == "Hypothesis Testing":
-    st.info("✅ This page is available! Navigate to **Pages → 6_Hypothesis_Testing** in sidebar")
-    st.markdown("### Features:")
-    st.markdown("- H1: Oligarchic Concentration (Gini coefficient, Lorenz curve)")
-    st.markdown("- H2: Strategic Timing (Q4 late-cycle analysis)")
-    st.markdown("- H3: Partisan Asymmetry (DEM vs REP networks)")
-    st.markdown("- Power Dynamics: Superdonors vs People-level")
-    st.markdown("- PAC Partisan Classification")
-    st.markdown("\n**👉 Use Streamlit's page navigation in the sidebar!**")
-
-elif page == "AI Chat":
-    st.info("🚧 AI Chat feature coming in Hour 3")
-    st.markdown("Ask questions in natural language:")
-    st.code('"What\'s the total Super PAC spending?"')
-    st.code('"Who are the top 5 megadonors?"')
-    st.code('"Show me Democratic Senate candidates in California"')
+    **👉 Click on any page in the sidebar to explore!**
+    """)
 
 # ==============================================================================
 # FOOTER
