@@ -162,7 +162,16 @@ if page == "Executive Summary":
         )
 
     with col4:
-        megadonor_count = len(df_donors[df_donors['DONOR_TIER'] == 'Mega'])
+        # Count megadonors ($1M+ contributors)
+        if 'DONOR_TIER' in df_donors.columns:
+            megadonor_count = len(df_donors[df_donors['DONOR_TIER'] == 'Mega'])
+        elif 'IS_MEGADONOR' in df_donors.columns:
+            megadonor_count = df_donors['IS_MEGADONOR'].sum()
+        elif 'TOTAL_CONTRIB' in df_donors.columns:
+            megadonor_count = len(df_donors[df_donors['TOTAL_CONTRIB'] >= 1_000_000])
+        else:
+            megadonor_count = 0
+
         st.metric(
             "Megadonors",
             f"{megadonor_count:,}",

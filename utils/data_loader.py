@@ -19,6 +19,46 @@ DATA_DIR = Path(__file__).parent.parent / "data" / "output"
 if not DATA_DIR.exists():
     DATA_DIR = Path(__file__).parent.parent.parent / "output"
 
+
+def _add_donor_tiers(df):
+    """
+    Add DONOR_TIER column to donors DataFrame based on TOTAL_CONTRIB amounts.
+
+    Tiers:
+    - Mega: $1M+
+    - Major: $100K-$1M
+    - Significant: $10K-$100K
+    - Small: $400-$10K
+    - Nano: <$400
+
+    Args:
+        df (pd.DataFrame): Donors DataFrame with TOTAL_CONTRIB column
+
+    Returns:
+        pd.DataFrame: DataFrame with DONOR_TIER column added
+    """
+    if df.empty or 'TOTAL_CONTRIB' not in df.columns:
+        return df
+
+    def classify_tier(amount):
+        """Classify donor tier based on total contribution amount."""
+        if pd.isna(amount):
+            return 'Unknown'
+        if amount >= 1_000_000:
+            return 'Mega'
+        elif amount >= 100_000:
+            return 'Major'
+        elif amount >= 10_000:
+            return 'Significant'
+        elif amount >= 400:
+            return 'Small'
+        else:
+            return 'Nano'
+
+    df['DONOR_TIER'] = df['TOTAL_CONTRIB'].apply(classify_tier)
+    return df
+
+
 @st.cache_data(ttl=3600)  # Cache for 1 hour
 def load_all_data():
     """
@@ -54,6 +94,8 @@ def load_all_data():
         donors_path = DATA_DIR / "input_oligarchy_donors.csv"
         if donors_path.exists():
             data['donors'] = pd.read_csv(donors_path)
+            # Add DONOR_TIER column based on TOTAL_CONTRIB
+            data['donors'] = _add_donor_tiers(data['donors'])
             logger.info(f"Loaded {len(data['donors'])} donors")
         else:
             logger.warning(f"Donors file not found: {donors_path}")
@@ -134,4 +176,5 @@ def load_candidate_data():
 def load_donor_data():
     """Load only donor data (for faster partial loading)."""
     donors_path = DATA_DIR / "input_oligarchy_donors.csv"
-    return pd.read_csv(donors_path)
+    df = pd.read_csv(donors_path)
+    return _add_donor_tiers(df)
