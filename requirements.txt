@@ -1,47 +1,47 @@
 # Campaign Finance Analysis App - Python Dependencies
-# Updated: 2025-12-10
+# Optimized for Streamlit Cloud deployment with Python 3.13
+# Updated: 2025-12-10 (Deployment Fix)
 
-# Core Framework
-streamlit==1.31.0
-pandas==2.2.2              # Updated for Python 3.13 compatibility (was 2.1.4)
-numpy==1.26.4              # Updated for pandas 2.2+ compatibility (was 1.26.3)
+# Core Framework (flexible versions for cloud compatibility)
+streamlit>=1.31.0
+pandas>=2.2.3              # Python 3.13 compatible, pyarrow compatibility
+numpy>=1.26.4              # pandas 2.2+ compatible
 
 # Visualization
-plotly==5.18.0
-altair==5.2.0
+plotly>=5.18.0
+altair>=5.2.0
 
-# Data Processing
-openpyxl==3.1.2
-pyarrow==14.0.2              # For Parquet support
+# Data Processing (upgraded for Python 3.13 pre-built wheels)
+openpyxl>=3.1.2
+pyarrow>=17.0.0            # Python 3.13 wheel support (was 14.0.2 - caused cmake build failure)
 
 # Configuration & Environment
-pyyaml==6.0.1
-python-dotenv==1.0.0
+pyyaml>=6.0.1
+python-dotenv>=1.0.0
 
 # Web Scraping & Data Download
-requests==2.31.0
-beautifulsoup4==4.12.3
-urllib3==2.1.0
+requests>=2.31.0
+beautifulsoup4>=4.12.3
 
 # AI/LLM Integration (for chat feature)
-openai==1.10.0
-anthropic==0.18.0
+openai>=1.10.0
+anthropic>=0.18.0
 
 # Statistical Analysis
-scipy==1.11.4
+scipy>=1.11.4
 
 # Network Analysis (for donor-committee graphs)
-networkx==3.2.1
+networkx>=3.2.1
 
-# Geospatial (optional - for maps)
-folium==0.15.1
-streamlit-folium==0.17.0    # Updated for folium 0.15+ support (was 0.16.0)
+# Geospatial (for maps)
+folium>=0.15.1
+streamlit-folium>=0.17.0
 
 # Progress Bars
-tqdm==4.66.1
+tqdm>=4.66.1
 
 # Date/Time handling
-python-dateutil==2.8.2
+python-dateutil>=2.8.2
 
 # Logging
-colorlog==6.8.2
+colorlog>=6.8.2
