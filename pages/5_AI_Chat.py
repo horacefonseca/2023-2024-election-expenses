@@ -28,17 +28,82 @@ st.sidebar.header("⚙️ Configuration")
 # API provider selection
 api_provider = st.sidebar.radio(
     "AI Provider",
-    ["Demo Mode (No API)", "OpenAI", "Anthropic"],
+    ["Demo Mode (No API)", "OpenAI", "Anthropic", "Google Gemini"],
     help="Select AI provider. Demo mode provides example responses without API keys."
 )
 
 # API key input
+api_key = None
+
 if api_provider != "Demo Mode (No API)":
-    api_key = st.sidebar.text_input(
-        f"{api_provider} API Key",
-        type="password",
-        help=f"Enter your {api_provider} API key. Not required in Demo Mode."
+    st.sidebar.markdown(f"### 🔑 {api_provider} API Key")
+
+    # Key input method selection
+    key_input_method = st.sidebar.radio(
+        "Input Method",
+        ["Paste Key", "Upload File"],
+        horizontal=True,
+        help="Choose how to provide your API key"
     )
+
+    if key_input_method == "Paste Key":
+        # Direct text input
+        api_key = st.sidebar.text_input(
+            "Paste API Key",
+            type="password",
+            help=f"Paste your {api_provider} API key here",
+            placeholder=f"sk-... or AIza... or other API key format"
+        )
+    else:
+        # File upload
+        uploaded_file = st.sidebar.file_uploader(
+            "Upload Key File",
+            type=["txt", "key", "json"],
+            help="Upload a text file containing your API key (first line will be used)"
+        )
+
+        if uploaded_file is not None:
+            try:
+                # Read the file
+                file_content = uploaded_file.read().decode("utf-8").strip()
+
+                # Check if it's JSON (for service account keys)
+                if uploaded_file.name.endswith('.json'):
+                    import json
+                    try:
+                        key_data = json.loads(file_content)
+                        # For Google service accounts
+                        if 'private_key' in key_data:
+                            api_key = key_data.get('private_key')
+                            st.sidebar.success("✅ Extracted key from JSON service account file")
+                        # For other JSON key files
+                        elif 'api_key' in key_data:
+                            api_key = key_data.get('api_key')
+                            st.sidebar.success("✅ Extracted API key from JSON")
+                        else:
+                            # Use entire JSON as key
+                            api_key = file_content
+                            st.sidebar.success("✅ Loaded JSON key file")
+                    except json.JSONDecodeError:
+                        # Not valid JSON, treat as plain text
+                        api_key = file_content.split('\n')[0]
+                        st.sidebar.success("✅ Loaded key from file")
+                else:
+                    # Plain text file - use first line
+                    api_key = file_content.split('\n')[0]
+                    st.sidebar.success("✅ Loaded key from file")
+
+            except Exception as e:
+                st.sidebar.error(f"❌ Error reading file: {str(e)}")
+                api_key = None
+
+    # Show key status
+    if api_key:
+        # Mask the key for display
+        masked_key = api_key[:8] + "..." + api_key[-4:] if len(api_key) > 12 else "***"
+        st.sidebar.caption(f"🔐 Key loaded: `{masked_key}`")
+    else:
+        st.sidebar.warning("⚠️ No API key provided")
 else:
     api_key = None
 
@@ -281,4 +346,10 @@ To get a detailed AI-powered answer, you can:
 # Footer
 st.markdown("---")
 st.caption("🤖 AI Chat Assistant | Campaign Finance Analysis Dashboard")
-st.caption("Note: API integration requires OpenAI or Anthropic API keys. Demo mode provides example responses using actual data.")
+st.caption("""
+**API Key Sources:**
+- **OpenAI**: Get your API key at [platform.openai.com/api-keys](https://platform.openai.com/api-keys)
+- **Anthropic**: Get your API key at [console.anthropic.com/settings/keys](https://console.anthropic.com/settings/keys)
+- **Google Gemini**: Get your API key at [makersuite.google.com/app/apikey](https://makersuite.google.com/app/apikey)
+- **Demo Mode**: No API key needed - provides intelligent responses using actual campaign finance data
+""")
