@@ -166,7 +166,7 @@ if 'TOTAL_CONTRIB' in df_donors.columns:
                     bgcolor='rgba(255,255,255,0.8)'
                 )
             ]
-        ))
+        )
 
         st.plotly_chart(fig, use_container_width=True)
 
@@ -195,7 +195,7 @@ if 'TOTAL_CONTRIB' in df_donors.columns:
             height=400,
             showlegend=False,
             yaxis=dict(range=[0, 100])
-        ))
+        )
 
         # Add threshold line at 50%
         fig.add_hline(y=50, line_dash="dash", line_color="gray",
