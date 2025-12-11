@@ -17,6 +17,134 @@ def load_data():
 
 data = load_data()
 
+# Helper function for demo responses
+def generate_demo_response(question, data):
+    """Generate demo responses based on question keywords"""
+    import numpy as np
+    import re
+
+    question_lower = question.lower()
+
+    # Top donors question
+    if any(word in question_lower for word in ['top donor', 'biggest donor', 'megadonor', 'richest']):
+        if 'donors' in data and not data['donors'].empty:
+            df_donors = data['donors']
+            if 'TOTAL_CONTRIB' in df_donors.columns and 'NAME_CLEAN' in df_donors.columns:
+                top_5 = df_donors.nlargest(5, 'TOTAL_CONTRIB')[['NAME_CLEAN', 'TOTAL_CONTRIB', 'STATE']]
+
+                response = "**Top 5 Donors by Total Contributions:**\n\n"
+                for idx, row in top_5.iterrows():
+                    response += f"{top_5.index.get_loc(idx) + 1}. **{row['NAME_CLEAN']}** - ${row['TOTAL_CONTRIB'] / 1e6:.1f}M"
+                    if 'STATE' in row and pd.notna(row['STATE']):
+                        response += f" ({row['STATE']})"
+                    response += "\n"
+
+                return response
+
+    # Party spending question
+    elif any(word in question_lower for word in ['democrat', 'republican', 'party', 'dem vs rep']):
+        if 'candidates' in data and not data['candidates'].empty:
+            df_cand = data['candidates']
+            if 'CAND_PTY_AFFILIATION' in df_cand.columns and 'TTL_DISB' in df_cand.columns:
+                party_totals = df_cand.groupby('CAND_PTY_AFFILIATION')['TTL_DISB'].sum().sort_values(ascending=False).head(5)
+
+                response = "**Campaign Spending by Party:**\n\n"
+                for party, total in party_totals.items():
+                    response += f"- **{party}**: ${total / 1e9:.2f}B\n"
+
+                return response
+
+    # State question
+    elif 'state' in question_lower:
+        if 'candidates' in data and not data['candidates'].empty:
+            df_cand = data['candidates']
+            if 'CAND_OFFICE_ST' in df_cand.columns and 'TTL_DISB' in df_cand.columns:
+                state_totals = df_cand.groupby('CAND_OFFICE_ST')['TTL_DISB'].sum().sort_values(ascending=False).head(10)
+
+                response = "**Top 10 States by Campaign Spending:**\n\n"
+                for state, total in state_totals.items():
+                    response += f"- **{state}**: ${total / 1e9:.2f}B\n"
+
+                return response
+
+    # Gini coefficient question
+    elif 'gini' in question_lower or 'inequality' in question_lower:
+        if 'donors' in data and not data['donors'].empty:
+            df_donors = data['donors']
+            if 'TOTAL_CONTRIB' in df_donors.columns:
+                # Calculate Gini
+                sorted_values = np.sort(df_donors['TOTAL_CONTRIB'].values)
+                n = len(sorted_values)
+                index = np.arange(1, n + 1)
+                gini = (2 * np.sum(index * sorted_values)) / (n * np.sum(sorted_values)) - (n + 1) / n
+
+                response = f"""**Wealth Distribution Analysis:**
+
+- **Gini Coefficient**: {gini:.4f}
+- **Interpretation**: {'Extreme inequality' if gini > 0.9 else 'High inequality' if gini > 0.7 else 'Moderate inequality'}
+
+The Gini coefficient measures wealth concentration on a scale from 0 (perfect equality) to 1 (perfect inequality). A value of {gini:.4f} indicates that campaign finance contributions are highly concentrated among a small number of wealthy donors.
+"""
+                return response
+
+    # Candidate spending question
+    elif 'candidate' in question_lower and any(word in question_lower for word in ['spent', 'spending', 'raised']):
+        if 'candidates' in data and not data['candidates'].empty:
+            df_cand = data['candidates']
+            if 'TTL_DISB' in df_cand.columns and 'CAND_NAME' in df_cand.columns:
+                # Extract threshold if mentioned
+                numbers = re.findall(r'\$?(\d+)[mM]', question_lower)
+                threshold = int(numbers[0]) * 1e6 if numbers else 10e6  # Default $10M
+
+                high_spenders = df_cand[df_cand['TTL_DISB'] >= threshold].nlargest(10, 'TTL_DISB')
+
+                response = f"**Candidates with spending over ${threshold / 1e6:.0f}M:**\n\n"
+                if len(high_spenders) > 0:
+                    for idx, row in high_spenders.iterrows():
+                        response += f"- **{row['CAND_NAME']}**: ${row['TTL_DISB'] / 1e6:.1f}M"
+                        if 'OFFICE_NAME' in row:
+                            response += f" ({row['OFFICE_NAME']})"
+                        response += "\n"
+                else:
+                    response = f"No candidates found with spending over ${threshold / 1e6:.0f}M in the filtered data."
+
+                return response
+
+    # Super PAC question
+    elif 'super pac' in question_lower or 'committee type' in question_lower:
+        if 'committees' in data and not data['committees'].empty:
+            df_comm = data['committees']
+            if 'CATEGORY' in df_comm.columns:
+                category_counts = df_comm['CATEGORY'].value_counts()
+
+                response = "**Committee Distribution by Category:**\n\n"
+                for category, count in category_counts.items():
+                    response += f"- **{category}**: {count:,} committees\n"
+
+                return response
+
+    # Default response
+    return f"""**Question received:** {question}
+
+🔧 **Demo Mode Response**
+
+I understand you're asking about: *{question}*
+
+To get a detailed AI-powered answer, you can:
+1. Switch to OpenAI or Anthropic in the sidebar and provide an API key
+2. Browse the other dashboard pages for interactive visualizations:
+   - **Committee Analysis**: Explore 12,370+ PACs and committees
+   - **Candidate Analysis**: Analyze 3,861 federal candidates
+   - **Oligarchy Analysis**: Deep dive into donor concentration
+   - **Hypothesis Testing**: Statistical analysis of campaign finance patterns
+
+**Available Data:**
+- {len(data.get('committees', [])):,} committees
+- {len(data.get('candidates', [])):,} candidates
+- {len(data.get('donors', [])):,} donors
+- ${data.get('totals', pd.DataFrame()).get('Amount', [0])[0] / 1e9:.2f}B total spending
+"""
+
 # Page header
 st.title("🤖 AI Chat Assistant")
 st.markdown("**Ask questions about campaign finance data in natural language**")
@@ -214,134 +342,6 @@ if st.session_state['chat_history']:
 
 else:
     st.info("💡 Ask a question above or click an example question to get started!")
-
-# Helper function for demo responses
-def generate_demo_response(question, data):
-    """Generate demo responses based on question keywords"""
-    question_lower = question.lower()
-
-    # Top donors question
-    if any(word in question_lower for word in ['top donor', 'biggest donor', 'megadonor', 'richest']):
-        if 'donors' in data and not data['donors'].empty:
-            df_donors = data['donors']
-            if 'TOTAL_CONTRIB' in df_donors.columns and 'NAME_CLEAN' in df_donors.columns:
-                top_5 = df_donors.nlargest(5, 'TOTAL_CONTRIB')[['NAME_CLEAN', 'TOTAL_CONTRIB', 'STATE']]
-
-                response = "**Top 5 Donors by Total Contributions:**\n\n"
-                for idx, row in top_5.iterrows():
-                    response += f"{top_5.index.get_loc(idx) + 1}. **{row['NAME_CLEAN']}** - ${row['TOTAL_CONTRIB'] / 1e6:.1f}M"
-                    if 'STATE' in row and pd.notna(row['STATE']):
-                        response += f" ({row['STATE']})"
-                    response += "\n"
-
-                return response
-
-    # Party spending question
-    elif any(word in question_lower for word in ['democrat', 'republican', 'party', 'dem vs rep']):
-        if 'candidates' in data and not data['candidates'].empty:
-            df_cand = data['candidates']
-            if 'CAND_PTY_AFFILIATION' in df_cand.columns and 'TTL_DISB' in df_cand.columns:
-                party_totals = df_cand.groupby('CAND_PTY_AFFILIATION')['TTL_DISB'].sum().sort_values(ascending=False).head(5)
-
-                response = "**Campaign Spending by Party:**\n\n"
-                for party, total in party_totals.items():
-                    response += f"- **{party}**: ${total / 1e9:.2f}B\n"
-
-                return response
-
-    # State question
-    elif 'state' in question_lower:
-        if 'candidates' in data and not data['candidates'].empty:
-            df_cand = data['candidates']
-            if 'CAND_OFFICE_ST' in df_cand.columns and 'TTL_DISB' in df_cand.columns:
-                state_totals = df_cand.groupby('CAND_OFFICE_ST')['TTL_DISB'].sum().sort_values(ascending=False).head(10)
-
-                response = "**Top 10 States by Campaign Spending:**\n\n"
-                for state, total in state_totals.items():
-                    response += f"- **{state}**: ${total / 1e9:.2f}B\n"
-
-                return response
-
-    # Gini coefficient question
-    elif 'gini' in question_lower or 'inequality' in question_lower:
-        if 'donors' in data and not data['donors'].empty:
-            df_donors = data['donors']
-            if 'TOTAL_CONTRIB' in df_donors.columns:
-                import numpy as np
-
-                # Calculate Gini
-                sorted_values = np.sort(df_donors['TOTAL_CONTRIB'].values)
-                n = len(sorted_values)
-                index = np.arange(1, n + 1)
-                gini = (2 * np.sum(index * sorted_values)) / (n * np.sum(sorted_values)) - (n + 1) / n
-
-                response = f"""**Wealth Distribution Analysis:**
-
-- **Gini Coefficient**: {gini:.4f}
-- **Interpretation**: {'Extreme inequality' if gini > 0.9 else 'High inequality' if gini > 0.7 else 'Moderate inequality'}
-
-The Gini coefficient measures wealth concentration on a scale from 0 (perfect equality) to 1 (perfect inequality). A value of {gini:.4f} indicates that campaign finance contributions are highly concentrated among a small number of wealthy donors.
-"""
-                return response
-
-    # Candidate spending question
-    elif 'candidate' in question_lower and any(word in question_lower for word in ['spent', 'spending', 'raised']):
-        if 'candidates' in data and not data['candidates'].empty:
-            df_cand = data['candidates']
-            if 'TTL_DISB' in df_cand.columns and 'CAND_NAME' in df_cand.columns:
-                # Extract threshold if mentioned
-                import re
-                numbers = re.findall(r'\$?(\d+)[mM]', question_lower)
-                threshold = int(numbers[0]) * 1e6 if numbers else 10e6  # Default $10M
-
-                high_spenders = df_cand[df_cand['TTL_DISB'] >= threshold].nlargest(10, 'TTL_DISB')
-
-                response = f"**Candidates with spending over ${threshold / 1e6:.0f}M:**\n\n"
-                if len(high_spenders) > 0:
-                    for idx, row in high_spenders.iterrows():
-                        response += f"- **{row['CAND_NAME']}**: ${row['TTL_DISB'] / 1e6:.1f}M"
-                        if 'OFFICE_NAME' in row:
-                            response += f" ({row['OFFICE_NAME']})"
-                        response += "\n"
-                else:
-                    response = f"No candidates found with spending over ${threshold / 1e6:.0f}M in the filtered data."
-
-                return response
-
-    # Super PAC question
-    elif 'super pac' in question_lower or 'committee type' in question_lower:
-        if 'committees' in data and not data['committees'].empty:
-            df_comm = data['committees']
-            if 'CATEGORY' in df_comm.columns:
-                category_counts = df_comm['CATEGORY'].value_counts()
-
-                response = "**Committee Distribution by Category:**\n\n"
-                for category, count in category_counts.items():
-                    response += f"- **{category}**: {count:,} committees\n"
-
-                return response
-
-    # Default response
-    return f"""**Question received:** {question}
-
-🔧 **Demo Mode Response**
-
-I understand you're asking about: *{question}*
-
-To get a detailed AI-powered answer, you can:
-1. Switch to OpenAI or Anthropic in the sidebar and provide an API key
-2. Browse the other dashboard pages for interactive visualizations:
-   - **Committee Analysis**: Explore 12,370+ PACs and committees
-   - **Candidate Analysis**: Analyze 3,861 federal candidates
-   - **Oligarchy Analysis**: Deep dive into donor concentration
-   - **Hypothesis Testing**: Statistical analysis of campaign finance patterns
-
-**Available Data:**
-- {len(data.get('committees', [])):,} committees
-- {len(data.get('candidates', [])):,} candidates
-- {len(data.get('donors', [])):,} donors
-- ${data.get('totals', pd.DataFrame()).get('Amount', [0])[0] / 1e9:.2f}B total spending
-"""
 
 # Footer
 st.markdown("---")
