@@ -88,7 +88,8 @@ if 'TOTAL_CONTRIB' in df_donors.columns:
 
     # Gini coefficient calculation (proper formula)
     n = len(sorted_donors)
-    sorted_values = sorted_donors['TOTAL_CONTRIB'].values  # Individual contribution values
+    sorted_values = sorted_donors['TOTAL_CONTRIB'].values  # Individual contribution values (for Gini)
+    cumsum = sorted_donors['TOTAL_CONTRIB'].cumsum().values  # Cumulative sum (for Lorenz curve)
     index_array = np.arange(1, n + 1)  # Ranks from 1 to n
     gini = (2 * np.sum(index_array * sorted_values) / (n * total_contrib)) - (n + 1) / n
 
