@@ -17,6 +17,13 @@ st.set_page_config(page_title="Candidate Analysis", page_icon="🗳️", layout=
 def load_data():
     return load_all_data()
 
+# Helper function to relabel state codes
+def relabel_state(state_code):
+    """Convert FEC state code '00' to user-friendly label"""
+    if state_code == '00':
+        return 'US (National)'
+    return state_code
+
 data = load_data()
 df_candidates = data.get('candidates', pd.DataFrame())
 
@@ -55,15 +62,35 @@ if 'CAND_PTY_AFFILIATION' in df_candidates.columns:
 else:
     selected_parties = []
 
-# State filter (multi-select)
+# Presidential Races Filter (Checkbox)
+st.sidebar.markdown("---")
+include_presidential = st.sidebar.checkbox(
+    "Include Presidential Races",
+    value=True,
+    help="Presidential candidates use state code '00' (US National) - representing 42.9% of total spending ($3.04B)"
+)
+
+# State filter (multi-select with relabeled '00')
 if 'CAND_OFFICE_ST' in df_candidates.columns:
-    states = sorted(df_candidates['CAND_OFFICE_ST'].dropna().unique().tolist())
-    selected_states = st.sidebar.multiselect(
+    # Get unique states and relabel '00' to 'US (National)'
+    raw_states = sorted(df_candidates['CAND_OFFICE_ST'].dropna().unique().tolist())
+    states_display = [relabel_state(s) for s in raw_states]
+
+    # Create mapping for reverse lookup
+    state_display_to_code = {relabel_state(s): s for s in raw_states}
+
+    # Default: all states except '00' if Presidential unchecked
+    default_display = [relabel_state(s) for s in raw_states if s != '00'] if not include_presidential else states_display
+
+    selected_states_display = st.sidebar.multiselect(
         "State (Multi-select)",
-        states,
-        default=states,  # All selected by default
-        help="Select one or more states to analyze"
+        states_display,
+        default=default_display,
+        help="Select states to analyze. 'US (National)' = Presidential races (FEC code '00')"
     )
+
+    # Convert display labels back to codes for filtering
+    selected_states = [state_display_to_code[s] for s in selected_states_display]
 else:
     selected_states = []
 
@@ -94,6 +121,10 @@ else:
 
 # Apply filters
 df_filtered = df_candidates.copy()
+
+# Presidential filter - exclude '00' if checkbox unchecked
+if not include_presidential and 'CAND_OFFICE_ST' in df_filtered.columns:
+    df_filtered = df_filtered[df_filtered['CAND_OFFICE_ST'] != '00']
 
 # Office filter - use .isin() for list matching
 if selected_offices and 'OFFICE_NAME' in df_filtered.columns:

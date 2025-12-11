@@ -6,6 +6,8 @@
 
 > **Comprehensive analysis of $29.83 billion in campaign finance data from the 2023-2024 U.S. election cycle**
 
+**Created by:** Horacio Fonseca, Data Analyst, MDC Undergraduate
+
 Interactive Streamlit application analyzing Federal Election Commission (FEC) bulk data across 12,370 committees, 3,861 candidates, and 110,664 donors. Features AI-powered natural language queries, automated ETL pipeline, and PowerBI-equivalent visualizations.
 
 ---

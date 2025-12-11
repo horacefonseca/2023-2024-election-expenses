@@ -240,6 +240,7 @@ st.markdown(
     """
     <div style='text-align: center; color: gray; padding: 20px;'>
     <p>Data Source: Federal Election Commission (FEC) Bulk Data • 2023-2024 Election Cycle</p>
+    <p><strong>Created by Horacio Fonseca</strong>, Data Analyst • MDC Undergraduate</p>
     <p>Built with ❤️ using Streamlit • For educational and research purposes only</p>
     <p>Last Updated: 2024-12-31 • Version 1.0.0</p>
     </div>

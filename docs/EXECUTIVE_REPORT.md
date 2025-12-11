@@ -1,7 +1,7 @@
 # Executive Report: Campaign Finance Data Mining Platform
 ## 2023-2024 Federal Election Cycle Analysis
 
-**Prepared by:** Campaign Finance Analysis Team
+**Prepared by:** Horacio Fonseca, Data Analyst, MDC Undergraduate
 **Date:** December 10, 2025
 **Version:** 1.0.0
 **Analysis Period:** 2023-2024 Election Cycle
