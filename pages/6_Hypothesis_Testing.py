@@ -88,9 +88,9 @@ if 'TOTAL_CONTRIB' in df_donors.columns:
 
     # Gini coefficient calculation (proper formula)
     n = len(sorted_donors)
-    cumsum = sorted_donors['TOTAL_CONTRIB'].cumsum().values  # Convert to numpy array
+    sorted_values = sorted_donors['TOTAL_CONTRIB'].values  # Individual contribution values
     index_array = np.arange(1, n + 1)  # Ranks from 1 to n
-    gini = (2 * np.sum(index_array * cumsum) / (n * total_contrib)) - (n + 1) / n
+    gini = (2 * np.sum(index_array * sorted_values) / (n * total_contrib)) - (n + 1) / n
 
     # Top percentile control
     top_1_pct = int(len(sorted_donors) * 0.01)
