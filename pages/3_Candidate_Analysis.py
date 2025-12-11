@@ -27,35 +27,58 @@ st.markdown("---")
 
 # Sidebar filters
 st.sidebar.header("🔍 Filters")
+st.sidebar.markdown("*Select multiple options to compare*")
 
-# Office filter
+# Office filter (multi-select)
 if 'OFFICE_NAME' in df_candidates.columns:
-    offices = ['All'] + sorted(df_candidates['OFFICE_NAME'].dropna().unique().tolist())
-    selected_office = st.sidebar.selectbox("Office", offices)
+    offices = sorted(df_candidates['OFFICE_NAME'].dropna().unique().tolist())
+    selected_offices = st.sidebar.multiselect(
+        "Office (Multi-select)",
+        offices,
+        default=offices,  # All selected by default
+        help="Select one or more offices to analyze"
+    )
 else:
-    selected_office = 'All'
+    selected_offices = []
 
-# Party filter
+# Party filter (multi-select)
 if 'CAND_PTY_AFFILIATION' in df_candidates.columns:
-    parties = ['All'] + sorted(df_candidates['CAND_PTY_AFFILIATION'].dropna().unique().tolist())
-    selected_party = st.sidebar.selectbox("Party", parties)
+    parties = sorted(df_candidates['CAND_PTY_AFFILIATION'].dropna().unique().tolist())
+    # Default to DEM and REP for easy comparison
+    default_parties = [p for p in ['DEM', 'REP'] if p in parties]
+    selected_parties = st.sidebar.multiselect(
+        "Party (Multi-select)",
+        parties,
+        default=default_parties if default_parties else parties[:2],
+        help="Select parties to compare (e.g., DEM vs REP)"
+    )
 else:
-    selected_party = 'All'
+    selected_parties = []
 
-# State filter
+# State filter (multi-select)
 if 'CAND_OFFICE_ST' in df_candidates.columns:
-    states = ['All'] + sorted(df_candidates['CAND_OFFICE_ST'].dropna().unique().tolist())
-    selected_state = st.sidebar.selectbox("State", states)
+    states = sorted(df_candidates['CAND_OFFICE_ST'].dropna().unique().tolist())
+    selected_states = st.sidebar.multiselect(
+        "State (Multi-select)",
+        states,
+        default=states,  # All selected by default
+        help="Select one or more states to analyze"
+    )
 else:
-    selected_state = 'All'
+    selected_states = []
 
-# Incumbent/Challenger/Open filter
+# Incumbent/Challenger/Open filter (multi-select)
 if 'CAND_ICI' in df_candidates.columns:
     ici_map = {'I': 'Incumbent', 'C': 'Challenger', 'O': 'Open Seat'}
-    ici_options = ['All'] + list(ici_map.values())
-    selected_ici = st.sidebar.selectbox("Status", ici_options)
+    ici_options = list(ici_map.values())
+    selected_ici_labels = st.sidebar.multiselect(
+        "Status (Multi-select)",
+        ici_options,
+        default=ici_options,  # All selected by default
+        help="Select candidate types to include"
+    )
 else:
-    selected_ici = 'All'
+    selected_ici_labels = []
 
 # Spending range
 if 'TTL_DISB' in df_candidates.columns:
@@ -72,19 +95,25 @@ else:
 # Apply filters
 df_filtered = df_candidates.copy()
 
-if selected_office != 'All' and 'OFFICE_NAME' in df_filtered.columns:
-    df_filtered = df_filtered[df_filtered['OFFICE_NAME'] == selected_office]
+# Office filter - use .isin() for list matching
+if selected_offices and 'OFFICE_NAME' in df_filtered.columns:
+    df_filtered = df_filtered[df_filtered['OFFICE_NAME'].isin(selected_offices)]
 
-if selected_party != 'All' and 'CAND_PTY_AFFILIATION' in df_filtered.columns:
-    df_filtered = df_filtered[df_filtered['CAND_PTY_AFFILIATION'] == selected_party]
+# Party filter - use .isin() for list matching
+if selected_parties and 'CAND_PTY_AFFILIATION' in df_filtered.columns:
+    df_filtered = df_filtered[df_filtered['CAND_PTY_AFFILIATION'].isin(selected_parties)]
 
-if selected_state != 'All' and 'CAND_OFFICE_ST' in df_filtered.columns:
-    df_filtered = df_filtered[df_filtered['CAND_OFFICE_ST'] == selected_state]
+# State filter - use .isin() for list matching
+if selected_states and 'CAND_OFFICE_ST' in df_filtered.columns:
+    df_filtered = df_filtered[df_filtered['CAND_OFFICE_ST'].isin(selected_states)]
 
-if selected_ici != 'All' and 'CAND_ICI' in df_filtered.columns:
+# Status filter - convert labels back to codes and use .isin()
+if selected_ici_labels and 'CAND_ICI' in df_filtered.columns:
     ici_reverse_map = {v: k for k, v in ici_map.items()}
-    df_filtered = df_filtered[df_filtered['CAND_ICI'] == ici_reverse_map[selected_ici]]
+    selected_ici_codes = [ici_reverse_map[label] for label in selected_ici_labels if label in ici_reverse_map]
+    df_filtered = df_filtered[df_filtered['CAND_ICI'].isin(selected_ici_codes)]
 
+# Spending filter
 if min_spending > 0 and 'TTL_DISB' in df_filtered.columns:
     df_filtered = df_filtered[df_filtered['TTL_DISB'] >= min_spending]
 
