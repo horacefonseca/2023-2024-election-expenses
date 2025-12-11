@@ -69,22 +69,27 @@ with st.sidebar:
     st.markdown("### 🔄 Data Management")
 
     if st.button("🔄 Update Data from FEC", use_container_width=True, type="primary"):
-        with st.spinner("Downloading latest FEC data..."):
-            try:
-                from etl.refresh import run_full_refresh
-                success, message = run_full_refresh()
-                if success:
-                    st.success(message)
-                    st.cache_data.clear()
-                    st.rerun()
-                else:
-                    st.error(message)
-            except Exception as e:
-                st.error(f"ETL Error: {str(e)}")
+        st.info("🚧 **Coming Soon! Not ready yet.**")
+        st.markdown("""
+        **Automated FEC data refresh is under development.**
+
+        This feature will enable:
+        - ✅ Automatic download of latest FEC bulk data files
+        - ✅ Data validation and transformation
+        - ✅ Incremental updates to dashboard datasets
+        - ✅ Real-time contribution tracking
+
+        **For now**: Data is current as of the 2023-2024 election cycle.
+
+        **Manual Update Instructions**:
+        1. Download FEC bulk data from [fec.gov/data/browse-data/?tab=bulk-data](https://www.fec.gov/data/browse-data/?tab=bulk-data)
+        2. Run ETL pipeline: `python etl/refresh.py`
+        3. Restart the Streamlit app
+        """)
 
     # Last update timestamp
-    st.caption("Last Updated: 2024-12-31")
-    st.caption("Source: FEC Bulk Data")
+    st.caption("📅 Last Updated: 2024-12-31 | Data covers 2023-2024 election cycle")
+    st.caption("📊 Source: FEC Bulk Data (webk24.txt, weball24.txt, itcont.txt)")
 
     st.divider()
 
